@@ -71,3 +71,16 @@ export interface IslamicEvent {
   hijriMonthName: string;
   description: string;
 }
+
+export type ArabicFontId = "uthmani" | "amiri" | "naskh" | "nastaliq" | "cairo";
+export type ArabicScriptType = "quran-uthmani" | "quran-simple";
+export type ArabicFontSize = "normal" | "large" | "xl" | "2xl";
+
+export interface ArabicFontOption {
+  id: ArabicFontId;
+  name: string;
+  arabicName: string;
+  fontFamilyClass: string;
+  description: string;
+}
+

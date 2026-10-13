@@ -10,6 +10,37 @@
   text-align: right;
 }
 
+.font-uthmani {
+  font-family: 'Scheherazade New', 'Amiri', serif;
+  direction: rtl;
+  text-align: right;
+}
+
+.font-amiri {
+  font-family: 'Amiri', serif;
+  direction: rtl;
+  text-align: right;
+}
+
+.font-noto-naskh {
+  font-family: 'Noto Naskh Arabic', sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+.font-nastaliq {
+  font-family: 'Noto Nastaliq Urdu', serif;
+  direction: rtl;
+  text-align: right;
+  line-height: 2.8;
+}
+
+.font-cairo {
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
 .font-quran {
   font-family: var(--font-arabic);
   direction: rtl;

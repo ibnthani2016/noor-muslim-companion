@@ -106,7 +106,7 @@ export const PrayerTimes: React.FC<PrayerTimesProps> = ({
 
             <p className="text-emerald-200/70 text-sm">
               Scheduled at{" "}
-              <strong className="text-white font-semibold">
+              <strong className="text-white font-semibold" suppressHydrationWarning>
                 {nextPrayer?.formattedTime || "--:--"}
               </strong>
             </p>
@@ -118,7 +118,7 @@ export const PrayerTimes: React.FC<PrayerTimesProps> = ({
               <div className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">
                 Time Remaining
               </div>
-              <div className="text-3xl md:text-4xl font-mono font-bold text-emerald-400 tracking-wider">
+              <div className="text-3xl md:text-4xl font-mono font-bold text-emerald-400 tracking-wider" suppressHydrationWarning>
                 {timeRemaining || "00:00:00"}
               </div>
             </div>

@@ -18,9 +18,14 @@ import {
 } from "@/utils/notifications";
 
 export default function Home() {
+  const [isMounted, setIsMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<NavTab>("prayer");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Notification preferences
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() => {
@@ -60,6 +65,38 @@ export default function Home() {
       localStorage.setItem("noor_notification_settings", JSON.stringify(settings));
     }
   };
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white">
+        <header className="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-emerald-900/30 px-4 py-3">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold text-xl font-serif">
+                ن
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h1 className="font-bold text-lg text-white tracking-tight">Noor</h1>
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/20">
+                    نُور
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 font-medium">Daily Islamic Companion</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-16 flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center gap-4 text-slate-400">
+            <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm font-medium text-slate-300">Loading Noor Companion...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white">

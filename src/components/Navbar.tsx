@@ -34,7 +34,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 نُور
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-medium">{hijriString}</p>
+            <p className="text-xs text-slate-400 font-medium" suppressHydrationWarning>
+              {hijriString}
+            </p>
           </div>
         </div>
 

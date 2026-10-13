@@ -35,7 +35,7 @@ export const HijriCalendar: React.FC = () => {
 
             <p className="text-xs text-slate-400">
               Gregorian Date:{" "}
-              <strong className="text-slate-200">
+              <strong className="text-slate-200" suppressHydrationWarning>
                 {today.toLocaleDateString(undefined, {
                   weekday: "long",
                   year: "numeric",

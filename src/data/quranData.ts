@@ -1,4 +1,4 @@
-import { SurahMeta, SurahDetail, AyahItem } from "@/types";
+import { SurahMeta, SurahDetail, AyahItem, ArabicFontOption, ArabicScriptType } from "@/types";
 
 export const SURAH_LIST: SurahMeta[] = [
   { number: 1, name: "الفاتحة", transliteration: "Al-Fatihah", translation: "The Opening", totalAyahs: 7, type: "Meccan", juz: 1 },
@@ -179,10 +179,17 @@ export const RECITERS: Reciter[] = [
   },
   {
     id: "ali_jaber",
-    name: "Ali Jaber",
-    arabicName: "علي جابر",
+    name: "Ali Jaber (Studio)",
+    arabicName: "علي جابر (استوديو)",
     everyAyahFolder: "Ali_Jaber_64kbps",
     serverUrl: (surahNumber) => `https://server11.mp3quran.net/a_jbr/${String(surahNumber).padStart(3, "0")}.mp3`,
+  },
+  {
+    id: "ali_jaber_haram",
+    name: "Ali Jaber (Haram Taraweeh)",
+    arabicName: "علي جابر (تراويح الحرم)",
+    everyAyahFolder: "Ali_Jaber_64kbps",
+    serverUrl: (surahNumber) => `https://archive.org/download/ali-jaber_202205/${String(surahNumber).padStart(3, "0")}.mp3`,
   },
   {
     id: "hudhaify",
@@ -223,8 +230,22 @@ export const RECITERS: Reciter[] = [
     id: "shatri",
     name: "Abu Bakr Al-Shatri",
     arabicName: "أبو بكر الشاطري",
-    everyAyahFolder: "Abu_Bakr_Ash-Shatri_128kbps",
-    serverUrl: (surahNumber) => `https://server11.mp3quran.net/shatri/${String(surahNumber).padStart(3, "0")}.mp3`,
+    everyAyahFolder: "Abu_Bakr_Ash-Shaatree_128kbps",
+    serverUrl: (surahNumber) => `https://cdn.mp3quran.net/audio/abubakr-shatri/r1/${String(surahNumber).padStart(3, "0")}.mp3`,
+  },
+  {
+    id: "sudais",
+    name: "Abdur-Rahman Al-Sudais",
+    arabicName: "عبد الرحمن السديس",
+    everyAyahFolder: "Abdurrahmaan_As-Sudais_192kbps",
+    serverUrl: (surahNumber) => `https://server11.mp3quran.net/sds/${String(surahNumber).padStart(3, "0")}.mp3`,
+  },
+  {
+    id: "shuraim",
+    name: "Saud Al-Shuraim",
+    arabicName: "سعود الشريم",
+    everyAyahFolder: "Saood_ash-Shuraym_128kbps",
+    serverUrl: (surahNumber) => `https://server7.mp3quran.net/shur/${String(surahNumber).padStart(3, "0")}.mp3`,
   },
 ];
 
@@ -250,24 +271,87 @@ export function getSurahAudioUrl(surahNumber: number, reciterId = "alafasy"): st
   return reciter.serverUrl(surahNumber);
 }
 
-// Single Ayah Recitation Audio URL based on chosen reciter
+// Single Ayah Recitation Audio URL based on chosen reciter (Ayah 0 = Opening Bismillah)
 export function getAyahAudioUrl(surahNumber: number, ayahInSurah: number, reciterId = "alafasy"): string {
+  const reciter = RECITERS.find((r) => r.id === reciterId) || RECITERS[0];
+  if (ayahInSurah === 0) {
+    if (surahNumber === 9) return "";
+    // If Husary, Ghamdi, or Surah 1, fallback to recorded Al-Fatihah Bismillah (001001.mp3)
+    if (surahNumber === 1 || reciter.id === "husary" || reciter.id === "ghamdi") {
+      return `https://everyayah.com/data/${reciter.everyAyahFolder}/001001.mp3`;
+    }
+    const sPadded = String(surahNumber).padStart(3, "0");
+    return `https://everyayah.com/data/${reciter.everyAyahFolder}/${sPadded}000.mp3`;
+  }
   const sPadded = String(surahNumber).padStart(3, "0");
   const aPadded = String(ayahInSurah).padStart(3, "0");
-  const reciter = RECITERS.find((r) => r.id === reciterId) || RECITERS[0];
   return `https://everyayah.com/data/${reciter.everyAyahFolder}/${sPadded}${aPadded}.mp3`;
 }
 
-// Fetch or fallback surah details with selected translation and reciter
+export const ARABIC_FONTS: ArabicFontOption[] = [
+  {
+    id: "uthmani",
+    name: "Madani Mushaf",
+    arabicName: "مصحف المدينة",
+    fontFamilyClass: "font-uthmani",
+    description: "King Fahd Complex Medina Mushaf typography with stacked diacritics",
+  },
+  {
+    id: "amiri",
+    name: "Classical Amiri",
+    arabicName: "الخط الأميري",
+    fontFamilyClass: "font-amiri",
+    description: "Traditional Egyptian Bulaq Naskh classical book typeface",
+  },
+  {
+    id: "naskh",
+    name: "Modern Naskh",
+    arabicName: "النسخ الحديث",
+    fontFamilyClass: "font-noto-naskh",
+    description: "Google Noto high-definition digital Naskh with crisp legibility",
+  },
+  {
+    id: "nastaliq",
+    name: "Indo-Pak Nastaliq",
+    arabicName: "نستعليق باكستاني",
+    fontFamilyClass: "font-nastaliq",
+    description: "Graceful angled South Asian / Urdu style calligraphy",
+  },
+  {
+    id: "cairo",
+    name: "Contemporary Cairo",
+    arabicName: "خط القاهرة المعاصر",
+    fontFamilyClass: "font-cairo",
+    description: "Modern geometric Arabic typeface with bold clean lines",
+  },
+];
+
+export const ARABIC_SCRIPTS: { id: ArabicScriptType; name: string; arabicName: string; description: string }[] = [
+  {
+    id: "quran-uthmani",
+    name: "Uthmani Script (Traditional)",
+    arabicName: "الرسم العثماني",
+    description: "Classical Quranic orthography with Tajweed diacritics & dagger alifs",
+  },
+  {
+    id: "quran-simple",
+    name: "Simple Clean Script",
+    arabicName: "الرسم الإملائي البسيط",
+    description: "Modern standardized spelling with clean basic vowel marks",
+  },
+];
+
+// Fetch or fallback surah details with selected translation, reciter, and script type
 export async function fetchSurahDetail(
   surahNumber: number,
   translationId = "en.sahih",
-  reciterId = "alafasy"
+  reciterId = "alafasy",
+  scriptType: ArabicScriptType = "quran-uthmani"
 ): Promise<SurahDetail> {
   const meta = SURAH_LIST.find((s) => s.number === surahNumber) || SURAH_LIST[0];
 
-  // If standard English and offline bundled exists, return immediately
-  if (translationId === "en.sahih" && OFFLINE_SURAHS[surahNumber]) {
+  // If standard English, default uthmani script, and offline bundled exists, return immediately
+  if (translationId === "en.sahih" && scriptType === "quran-uthmani" && OFFLINE_SURAHS[surahNumber]) {
     return {
       ...meta,
       ayahs: OFFLINE_SURAHS[surahNumber],
@@ -275,9 +359,9 @@ export async function fetchSurahDetail(
   }
 
   try {
-    // Dynamic fetch from open Quran API with selected translation edition
+    // Dynamic fetch from open Quran API with selected translation edition and script
     const res = await fetch(
-      `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,${translationId}`
+      `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/${scriptType},${translationId}`
     );
     if (!res.ok) throw new Error("Network response was not ok");
     const json = await res.json();
