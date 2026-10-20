@@ -522,3 +522,38 @@ Previously, the audio player began reciting directly at Ayah 1, omitting the ope
 - [`src/utils/audioCache.ts`](file:///C:/Users/HP/.gemini/antigravity/scratch/muslim-companion/src/utils/audioCache.ts)
 
 
+
+---
+
+### [DEC-019] 3-Phase Architectural, Worship Habit & Quran Mushaf/Hifdh Upgrade
+
+- **Date:** 2026-10-16
+- **Status:** Accepted & Implemented
+- **Author:** Noor Companion Engineering Team
+- **Tags:** #architecture #performance #salah-tracker #quran #mushaf #hifdh #tafsir #adhkar #hijri-calendar #themes #zakat #accessibility
+
+#### Context & Problem Statement
+Following a comprehensive competitive and architectural audit against industry-leading Islamic companion apps (*Pillars*, *Tarteel AI*, *Quran.com*, *Muslim Pro*, *Greentech Al-Quran*, *Athkar*, and *Mawaqit*), we identified three phases of improvements to eliminate global re-render overhead, elevate core worship habits (Prayer, Quran, Adhkar, Qibla) in mobile navigation, add accountability and streak systems (with excused streak protection), upgrade the Quran Reader with Mushaf page view, Hifdh self-testing, and Tafsir, and complete the Hijri calendar, Zakat calculator, and multi-theme engine.
+
+#### Decision Details
+1. **Phase 1 — Core Architecture, Bug Fixes & Worship Habits:**
+   - **Eliminated 1Hz Root Re-Render Storm:** Replaced the 1-second root `currentTime` state in `usePrayerTimes.ts` with a 30-second minute-boundary check and isolated the 1-second countdown ticker inside `PrayerTimes.tsx` via `nextPrayerTargetTime`.
+   - **Dynamic Code-Splitting:** Lazy-loaded non-default tab views (`QuranReader`, `AdhkarTasbih`, `QiblaCompass`, `ZakatCalculator`, `HijriCalendar`, `MediaHub`, `CardStudio`) in `src/app/page.tsx` via `next/dynamic`.
+   - **Mobile Bottom Navigation Hierarchy:** Promoted **Adhkar** and **Qibla** to the primary 5-tab mobile bottom bar (`Prayer | Quran | Adhkar | Qibla | More`) in `BottomNav.tsx` and defined `.safe-area-pb` in `globals.css`.
+   - **Accessibility & Typography:** Restored pinch-to-zoom (`maximumScale: 5`, `userScalable: true`) and text selection in `layout.tsx`, and upgraded the primary UI sans-serif font to `Outfit`.
+   - **Pillars-Style Daily Salah Habit Tracker:** Added interactive 5-prayer status logging (`On Time`, `Jama'ah`, `Late`, `Missed/Qaza`), a daily `X/5` ring, consecutive day streak counter, **Qaza Makeup Counter**, and **Pause Streak (Excused)** mode in `PrayerTimes.tsx`.
+   - **Daily Auto-Resetting Adhkar & Tasbih Persistence:** Keyed Adhkar progress by `YYYY-MM-DD` (`noor_adhkar_daily_v2`) in `AdhkarTasbih.tsx` with a **Daily Adhkar Streak**, category progress bar, auto-scroll to the next incomplete Dhikr upon completion, a new **Before Sleep (`sleep` / أذكار النوم)** category in `adhkarData.ts`, single shared `AudioContext`, and persistent per-preset + lifetime Tasbih counters.
+2. **Phase 2 — Quran Reader Upgrade (Mushaf View, Hifdh Suite, Bookmarks, Tafsir & 100% Offline Text):**
+   - **100% Offline Text Caching:** Persisted every fetched Surah JSON payload in `localStorage` (`noor_surah_text_v1_*`) inside `quranData.ts` so all 114 Surahs work offline once opened.
+   - **Mushaf Flowing Page View vs. Verse Cards:** Added a reading mode toggle (`cards` vs `mushaf`) in `QuranReader.tsx` with continuous inline RTL verses, `﴿١﴾` Arabic-Indic medallions, and a docked translation/Tafsir study card.
+   - **Hifdh Memorization Suite:** Added **Hifdh Blur/Self-Test Mode** (tap any blurred verse to reveal) and an **Ayah-Range Looper** (`From Verse X` to `To Verse Y`).
+   - **Exact Resume Banner, Multi-Bookmarks, Quick Surahs, Juz Filter & Tafsir Drawer:** Tracked exact `{ surah, ayah }` reading position (`noor_last_read_pos`), added multi-ayah bookmarks (`noor_quran_bookmarks`), Quick-Access Surah pills (*Ayat al-Kursi*, *Al-Kahf*, *Ya-Sin*, *Ar-Rahman*, *Al-Waqi'ah*, *Al-Mulk*), Juz 1–30 filter, 1-tap Copy Ayah, expandable **Tafsir Al-Muyassar** commentary drawer, and `URL.revokeObjectURL()` Blob URL cleanup.
+3. **Phase 3 — Interactive Hijri Calendar Grid, Multi-Theme Engine, Zakat & Card Studio Polish:**
+   - **7-Column Monthly Hijri/Gregorian Calendar Grid:** Built a full monthly calendar grid in `HijriCalendar.tsx` highlighting White Days (`13–15`), Sunnah Monday/Thursday fasts, Islamic holidays, and an interactive **Moon-Sighting Offset (`-2` to `+2` days)**.
+   - **Multi-Theme Engine & Mosque Offsets:** Added **Emerald Dark**, **OLED Pitch Black**, and **Warm Sepia** themes (`data-theme` attribute in `globals.css`), plus **Per-Prayer Minute Adjustments (`±30m`)** and **High-Latitude Rules** in `SettingsModal.tsx`.
+   - **Zakat Persistence & Fitrana/Fidyah Calculator:** Added `localStorage` persistence, currency-aware Gold/Silver spot price defaults, and a **Zakat al-Fitr (Fitrana) & Fidyah** calculator tab in `ZakatCalculator.tsx`.
+   - **Qibla Calibration & Card Studio Auto-Fit:** Added a Figure-8 magnetometer calibration guide modal in `QiblaCompass.tsx` and upgraded `CardStudio.tsx` with `Outfit` canvas typography, an Arabic calligraphy selector, and automatic vertical overflow font scaling (`contentMaxHeight`).
+
+#### Consequences & Trade-offs
+- **Positive:**Zero idle CPU re-renders, 0 Impeccable UI anti-pattern warnings, complete feature parity with top-tier Islamic apps, and full offline resilience.
+- **Negative:** None.

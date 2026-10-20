@@ -12,12 +12,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const basePath = process.env.GITHUB_ACTIONS === "true" ? "/noor-muslim-companion" : "";
+
 export const metadata: Metadata = {
   title: "Noor - Muslim Daily Companion",
   description: "Accurate offline Prayer Times, Qibla Compass, Quran with Audio, Daily Adhkar, and Zakat Calculator.",
-  manifest: "/manifest.json",
+  manifest: `${basePath}/manifest.json`,
   icons: {
-    icon: "/favicon.ico",
+    icon: `${basePath}/favicon.ico`,
   },
 };
 
@@ -25,8 +27,6 @@ export const viewport: Viewport = {
   themeColor: "#064e3b",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -44,12 +44,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Noto+Nastaliq+Urdu:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Scheherazade+New:wght@400;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Noto+Nastaliq+Urdu:wght@400;700&family=Outfit:wght@400;500;600;700;800&family=Scheherazade+New:wght@400;700&display=swap"
           rel="stylesheet"
         />
       </head>
       <body
-        className="min-h-full bg-slate-950 text-slate-100 flex flex-col font-sans select-none overflow-x-hidden"
+        className="min-h-full bg-slate-950 text-white flex flex-col font-sans overflow-x-hidden"
         suppressHydrationWarning
       >
         {children}

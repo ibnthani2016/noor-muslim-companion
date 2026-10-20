@@ -341,7 +341,26 @@ export const ARABIC_SCRIPTS: { id: ArabicScriptType; name: string; arabicName: s
   },
 ];
 
-// Fetch or fallback surah details with selected translation, reciter, and script type
+export function toArabicIndicDigits(num: number): string {
+  const arabicDigits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+  return String(num)
+    .split("")
+    .map((ch) => arabicDigits[parseInt(ch, 10)] ?? ch)
+    .join("");
+}
+
+export function isSurahTextCached(
+  surahNumber: number,
+  scriptType: ArabicScriptType = "quran-uthmani",
+  translationId = "en.sahih"
+): boolean {
+  if (OFFLINE_SURAHS[surahNumber]) return true;
+  if (typeof window === "undefined") return false;
+  const cacheKey = `noor_surah_text_v1_${surahNumber}_${scriptType}_${translationId}`;
+  return Boolean(localStorage.getItem(cacheKey));
+}
+
+// Fetch or fallback surah details with selected translation, reciter, and script type (persists in localStorage for 100% offline text)
 export async function fetchSurahDetail(
   surahNumber: number,
   translationId = "en.sahih",
@@ -349,17 +368,42 @@ export async function fetchSurahDetail(
   scriptType: ArabicScriptType = "quran-uthmani"
 ): Promise<SurahDetail> {
   const meta = SURAH_LIST.find((s) => s.number === surahNumber) || SURAH_LIST[0];
+  const cacheKey = `noor_surah_text_v1_${surahNumber}_${scriptType}_${translationId}`;
 
-  // If standard English, default uthmani script, and offline bundled exists, return immediately
+  // 1. Check localStorage cache first for instant offline access
+  if (typeof window !== "undefined") {
+    try {
+      const cachedRaw = localStorage.getItem(cacheKey);
+      if (cachedRaw) {
+        const parsedAyahs: AyahItem[] = JSON.parse(cachedRaw);
+        if (Array.isArray(parsedAyahs) && parsedAyahs.length === meta.totalAyahs) {
+          return {
+            ...meta,
+            ayahs: parsedAyahs.map((a) => ({
+              ...a,
+              audioUrl: getAyahAudioUrl(surahNumber, a.numberInSurah, reciterId),
+            })),
+          };
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }
+
+  // 2. If standard English, default uthmani script, and offline bundled exists, return immediately
   if (translationId === "en.sahih" && scriptType === "quran-uthmani" && OFFLINE_SURAHS[surahNumber]) {
     return {
       ...meta,
-      ayahs: OFFLINE_SURAHS[surahNumber],
+      ayahs: OFFLINE_SURAHS[surahNumber].map((a) => ({
+        ...a,
+        audioUrl: getAyahAudioUrl(surahNumber, a.numberInSurah, reciterId),
+      })),
     };
   }
 
   try {
-    // Dynamic fetch from open Quran API with selected translation edition and script
+    // 3. Dynamic fetch from open Quran API with selected translation edition and script
     const res = await fetch(
       `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/${scriptType},${translationId}`
     );
@@ -368,7 +412,7 @@ export async function fetchSurahDetail(
     const arabicVerses = json.data[0].ayahs;
     const translatedVerses = json.data[1].ayahs;
 
-    const ayahs: AyahItem[] = arabicVerses.map((v: any, index: number) => {
+    const ayahs: AyahItem[] = arabicVerses.map((v: { number: number; numberInSurah: number; text: string }, index: number) => {
       const globalNumber = v.number;
       return {
         number: globalNumber,
@@ -378,6 +422,15 @@ export async function fetchSurahDetail(
         audioUrl: getAyahAudioUrl(surahNumber, v.numberInSurah, reciterId),
       };
     });
+
+    // Save to localStorage for permanent offline reading
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(ayahs));
+      } catch {
+        // Storage quota reached; ignore gracefully
+      }
+    }
 
     return {
       ...meta,
@@ -405,10 +458,55 @@ export async function fetchSurahDetail(
           number: 2,
           numberInSurah: 2,
           textArabic: `سورة ${meta.name} (${meta.transliteration})`,
-          textEnglish: `Connect to the internet to load all ${meta.totalAyahs} verses of ${meta.transliteration}, or listen to the recitation below.`,
+          textEnglish: `Connect to the internet once to cache all ${meta.totalAyahs} verses of ${meta.transliteration} for permanent offline reading.`,
           audioUrl: getSurahAudioUrl(surahNumber),
         },
       ],
+    };
+  }
+}
+
+// Fetch concise Arabic & English Tafsir/Exegesis for a specific verse (with offline localStorage caching)
+export async function fetchAyahTafsir(
+  surahNumber: number,
+  ayahInSurah: number
+): Promise<{ arabicTafsir: string; englishTafsir: string }> {
+  const cacheKey = `noor_tafsir_v1_${surahNumber}_${ayahInSurah}`;
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem(cacheKey);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // Ignore
+    }
+  }
+
+  try {
+    const res = await fetch(
+      `https://api.alquran.cloud/v1/ayah/${surahNumber}:${ayahInSurah}/editions/ar.muyassar,en.yusufali`
+    );
+    if (!res.ok) throw new Error("Tafsir network error");
+    const json = await res.json();
+    const arabicTafsir =
+      json?.data?.[0]?.text ||
+      "التفسير الميسر غير متوفر حالياً بدون اتصال بالإنترنت.";
+    const englishTafsir =
+      json?.data?.[1]?.text ||
+      "Commentary unavailable offline.";
+
+    const payload = { arabicTafsir, englishTafsir };
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(payload));
+      } catch {
+        // Ignore quota errors
+      }
+    }
+    return payload;
+  } catch {
+    return {
+      arabicTafsir: "يرجى الاتصال بالإنترنت لتحميل التفسير الميسر لهذه الآية وحفظه تلقائياً.",
+      englishTafsir: "Connect to the internet once to load and cache verse commentary (Tafsir Al-Muyassar & Classical Exegesis).",
     };
   }
 }

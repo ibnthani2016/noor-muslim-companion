@@ -1,7 +1,7 @@
 import { DhikrItem } from "@/types";
 
 export interface AdhkarCategory {
-  id: "morning" | "evening" | "after-salah" | "daily";
+  id: "morning" | "evening" | "after-salah" | "sleep" | "daily";
   title: string;
   arabicTitle: string;
   items: DhikrItem[];
@@ -179,6 +179,53 @@ export const ADHKAR_CATEGORIES: AdhkarCategory[] = [
       },
     ],
   },
+  {
+    id: "sleep",
+    title: "Before Sleep Adhkar (Adhkar an-Nawm)",
+    arabicTitle: "أَذْكَارُ النَّوْمِ",
+    items: [
+      {
+        id: "n-1",
+        title: "In Your Name O Allah, I die and I live",
+        arabic: "بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
+        transliteration: "Bismika Allahumma amutu wa ahya.",
+        translation: "In Your Name, O Allah, I die (sleep) and I live (wake).",
+        reference: "Sahih al-Bukhari (6324)",
+        benefit: "Entrusts the soul to Allah before entering sleep, the minor death.",
+        targetCount: 1,
+      },
+      {
+        id: "n-2",
+        title: "Three Quls Blown into Palms",
+        arabic: "قُلْ هُوَ اللَّهُ أَحَدٌ ۝ قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ قُلْ أَعُوذُ بِرَبِّ النَّاسِ",
+        transliteration: "Qul Huwallahu Ahad... Qul A'udhu bi-Rabbil-Falaq... Qul A'udhu bi-Rabbin-Nas...",
+        translation: "Cup the palms together, blow gently into them, recite Surah Al-Ikhlas, Al-Falaq, and An-Nas, then wipe over the head, face, and body.",
+        reference: "Sahih al-Bukhari (5017)",
+        benefit: "Prophetic nightly Sunnah for complete physical and spiritual protection while sleeping.",
+        targetCount: 3,
+      },
+      {
+        id: "n-3",
+        title: "Tasbih of Fatimah Before Sleep (Subhanallah 33, Alhamdulillah 33, Allahu Akbar 34)",
+        arabic: "سُبْحَانَ اللَّهِ (٣٣) ۝ الْحَمْدُ لِلَّهِ (٣٣) ۝ اللَّهُ أَكْبَرُ (٣٤)",
+        transliteration: "Subhanallah (33), Alhamdulillah (33), Allahu Akbar (34).",
+        translation: "Glory be to Allah (33), Praise be to Allah (33), Allah is the Greatest (34).",
+        reference: "Sahih al-Bukhari (5361)",
+        benefit: "Taught by the Prophet ﷺ to Fatimah & Ali as better than having a servant, granting strength and barakah.",
+        targetCount: 34,
+      },
+      {
+        id: "n-4",
+        title: "Surrendering the Soul to Allah",
+        arabic: "اللَّهُمَّ أَسْلَمْتُ نَفْسِي إِلَيْكَ، وَفَوَّضْتُ أَمْرِي إِلَيْكَ، وَوَجَّهْتُ وَجْهِي إِلَيْكَ، وَأَلْجَأْتُ ظَهْرِي إِلَيْكَ، رَغْبَةً وَرَهْبَةً إِلَيْكَ، لَا مَلْجَأَ وَلَا مَنْجَا مِنْكَ إِلَّا إِلَيْكَ، آمَنْتُ بِكِتَابِكَ الَّذِي أَنْزَلْتَ، وَبِنَبِيِّكَ الَّذِي أَرْسَلْتَ",
+        transliteration: "Allahumma aslamtu nafsi ilayk, wa fawwadtu amri ilayk, wa wajjahtu wajhi ilayk, wa alja'tu dhahri ilayk, raghbatan wa rahbatan ilayk, la malja'a wa la manja minka illa ilayk, amantu bikitabikal-ladhi anzalt, wa binabiyyikal-ladhi arsalt.",
+        translation: "O Allah, I submit my soul unto You, and I entrust my affair unto You, and I turn my face towards You, and I totally rely on You, in hope and fear of You. There is no refuge or safe haven from You except with You. I believe in Your Book which You have revealed and in Your Prophet whom You have sent.",
+        reference: "Sahih al-Bukhari (6311)",
+        benefit: "If you die that night after reciting this as your final words, you die upon the natural Islamic Fitrah.",
+        targetCount: 1,
+      },
+    ],
+  },
 ];
 
 export const MORNING_ADHKAR: DhikrItem[] =
@@ -189,3 +236,6 @@ export const EVENING_ADHKAR: DhikrItem[] =
 
 export const AFTER_SALAH_ADHKAR: DhikrItem[] =
   ADHKAR_CATEGORIES.find((c) => c.id === "after-salah")?.items || [];
+
+export const SLEEP_ADHKAR: DhikrItem[] =
+  ADHKAR_CATEGORIES.find((c) => c.id === "sleep")?.items || [];

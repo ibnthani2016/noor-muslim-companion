@@ -9,15 +9,37 @@ import {
   Madhab,
   SunnahTimes,
   Prayer,
+  HighLatitudeRule,
 } from "adhan";
-import { LocationCoords, CalculationMethodKey, MadhabKey, PrayerTimeItem } from "@/types";
+import {
+  LocationCoords,
+  CalculationMethodKey,
+  MadhabKey,
+  PrayerTimeItem,
+  PrayerOffsets,
+  HighLatitudeRuleKey,
+} from "@/types";
 import { DEFAULT_CITIES } from "@/data/cities";
 import { formatHijriDate } from "@/utils/hijri";
+
+export const DEFAULT_PRAYER_OFFSETS: PrayerOffsets = {
+  fajr: 0,
+  sunrise: 0,
+  dhuhr: 0,
+  asr: 0,
+  maghrib: 0,
+  isha: 0,
+};
 
 export function usePrayerTimes() {
   const [location, setLocation] = useState<LocationCoords>(DEFAULT_CITIES[0]); // Default Makkah
   const [methodKey, setMethodKey] = useState<CalculationMethodKey>("UmmAlQura");
   const [madhabKey, setMadhabKey] = useState<MadhabKey>("shafi");
+  const [prayerOffsets, setPrayerOffsets] = useState<PrayerOffsets>(DEFAULT_PRAYER_OFFSETS);
+  const [highLatRule, setHighLatRule] = useState<HighLatitudeRuleKey>("MiddleOfTheNight");
+  const [hijriOffset, setHijriOffset] = useState<number>(0);
+
+  // Tick once every 30 seconds at root level to avoid 1Hz full-app re-render storms
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -33,20 +55,33 @@ export function usePrayerTimes() {
 
       const savedMadhab = localStorage.getItem("noor_madhab") as MadhabKey;
       if (savedMadhab) setMadhabKey(savedMadhab);
+
+      const savedOffsets = localStorage.getItem("noor_prayer_offsets");
+      if (savedOffsets) {
+        setPrayerOffsets({ ...DEFAULT_PRAYER_OFFSETS, ...JSON.parse(savedOffsets) });
+      }
+
+      const savedHighLat = localStorage.getItem("noor_high_lat_rule") as HighLatitudeRuleKey;
+      if (savedHighLat) setHighLatRule(savedHighLat);
+
+      const savedHijriOffset = localStorage.getItem("noor_hijri_offset");
+      if (savedHijriOffset !== null) {
+        setHijriOffset(parseInt(savedHijriOffset, 10) || 0);
+      }
     } catch (e) {
       console.warn("Error reading localStorage:", e);
     }
   }, []);
 
-  // Live timer tick every 1000ms
+  // Refresh minute boundary every 30s (countdown display handles 1Hz locally in PrayerTimes)
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);
+    }, 30000);
     return () => clearInterval(timer);
   }, []);
 
-  // Resolve calculation method parameters
+  // Resolve calculation method parameters including minute adjustments & high-latitude rules
   const calculationParameters = useMemo<CalculationParameters>(() => {
     let params: CalculationParameters;
     switch (methodKey) {
@@ -83,8 +118,26 @@ export function usePrayerTimes() {
 
     // Set Madhab for Asr
     params.madhab = madhabKey === "hanafi" ? Madhab.Hanafi : Madhab.Shafi;
+
+    // Set High-Latitude Rule
+    if (highLatRule === "SeventhOfTheNight") {
+      params.highLatitudeRule = HighLatitudeRule.SeventhOfTheNight;
+    } else if (highLatRule === "TwilightAngle") {
+      params.highLatitudeRule = HighLatitudeRule.TwilightAngle;
+    } else {
+      params.highLatitudeRule = HighLatitudeRule.MiddleOfTheNight;
+    }
+
+    // Apply per-prayer manual minute adjustments
+    params.adjustments.fajr = prayerOffsets.fajr || 0;
+    params.adjustments.sunrise = prayerOffsets.sunrise || 0;
+    params.adjustments.dhuhr = prayerOffsets.dhuhr || 0;
+    params.adjustments.asr = prayerOffsets.asr || 0;
+    params.adjustments.maghrib = prayerOffsets.maghrib || 0;
+    params.adjustments.isha = prayerOffsets.isha || 0;
+
     return params;
-  }, [methodKey, madhabKey]);
+  }, [methodKey, madhabKey, highLatRule, prayerOffsets]);
 
   // Compute offline astronomical prayer times
   const prayerTimes = useMemo(() => {
@@ -92,9 +145,15 @@ export function usePrayerTimes() {
     return new PrayerTimes(coords, currentTime, calculationParameters);
   }, [location, currentTime, calculationParameters]);
 
-  // Compute sunnah times (Midnight & Last Third / Tahajjud)
+  // Compute sunnah times (Midnight, Last Third / Tahajjud, and Duha)
   const sunnahTimes = useMemo(() => {
-    return new SunnahTimes(prayerTimes);
+    const st = new SunnahTimes(prayerTimes);
+    const duha = new Date(prayerTimes.sunrise.getTime() + 18 * 60 * 1000);
+    return {
+      middleOfTheNight: st.middleOfTheNight,
+      lastThirdOfTheNight: st.lastThirdOfTheNight,
+      duha,
+    };
   }, [prayerTimes]);
 
   // Determine next and current prayer
@@ -118,6 +177,9 @@ export function usePrayerTimes() {
     const isNext = (p: any) => nextPrayerKey === p;
     const isPast = (date: Date) => date.getTime() < now;
 
+    // If after Isha (nextPrayerKey === Prayer.None), Fajr is highlighted as next
+    const isAfterIsha = nextPrayerKey === Prayer.None;
+
     return [
       {
         id: "fajr",
@@ -125,8 +187,8 @@ export function usePrayerTimes() {
         arabicName: "الفَجْر",
         time: prayerTimes.fajr,
         formattedTime: formatTime(prayerTimes.fajr),
-        isNext: isNext(Prayer.Fajr),
-        isPast: isPast(prayerTimes.fajr),
+        isNext: isNext(Prayer.Fajr) || isAfterIsha,
+        isPast: isPast(prayerTimes.fajr) && !isAfterIsha,
       },
       {
         id: "sunrise",
@@ -176,21 +238,23 @@ export function usePrayerTimes() {
     ];
   }, [prayerTimes, nextPrayerKey, currentTime, formatTime]);
 
-  // Compute countdown to next prayer
-  const countdown = useMemo(() => {
+  // Resolve exact target Date for next prayer (including tomorrow's Fajr if after Isha)
+  const nextPrayerTargetTime = useMemo<Date>(() => {
     const nextTime = prayerTimes.timeForPrayer(nextPrayerKey);
-    if (!nextTime) {
-      // If after Isha, next prayer is Fajr tomorrow
-      const tomorrow = new Date(currentTime);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const coords = new Coordinates(location.latitude, location.longitude);
-      const tomorrowPT = new PrayerTimes(coords, tomorrow, calculationParameters);
-      const diff = tomorrowPT.fajr.getTime() - currentTime.getTime();
-      return Math.max(0, Math.floor(diff / 1000));
-    }
-    const diff = nextTime.getTime() - currentTime.getTime();
-    return Math.max(0, Math.floor(diff / 1000));
+    if (nextTime) return nextTime;
+
+    const tomorrow = new Date(currentTime);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const coords = new Coordinates(location.latitude, location.longitude);
+    const tomorrowPT = new PrayerTimes(coords, tomorrow, calculationParameters);
+    return tomorrowPT.fajr;
   }, [prayerTimes, nextPrayerKey, currentTime, location, calculationParameters]);
+
+  // Initial countdown snapshot (components needing 1Hz precision compute against nextPrayerTargetTime)
+  const countdown = useMemo(() => {
+    const diff = nextPrayerTargetTime.getTime() - currentTime.getTime();
+    return Math.max(0, Math.floor(diff / 1000));
+  }, [nextPrayerTargetTime, currentTime]);
 
   const formattedCountdown = useMemo(() => {
     const hrs = Math.floor(countdown / 3600);
@@ -245,6 +309,22 @@ export function usePrayerTimes() {
     localStorage.setItem("noor_madhab", newMadhab);
   }, []);
 
+  const updatePrayerOffsets = useCallback((newOffsets: PrayerOffsets) => {
+    setPrayerOffsets(newOffsets);
+    localStorage.setItem("noor_prayer_offsets", JSON.stringify(newOffsets));
+  }, []);
+
+  const updateHighLatRule = useCallback((newRule: HighLatitudeRuleKey) => {
+    setHighLatRule(newRule);
+    localStorage.setItem("noor_high_lat_rule", newRule);
+  }, []);
+
+  const updateHijriOffset = useCallback((newOffset: number) => {
+    const clamped = Math.max(-2, Math.min(2, newOffset));
+    setHijriOffset(clamped);
+    localStorage.setItem("noor_hijri_offset", String(clamped));
+  }, []);
+
   const nextPrayerItem = prayersList.find((p) => p.isNext) || prayersList[0];
 
   return {
@@ -259,11 +339,18 @@ export function usePrayerTimes() {
     madhabKey,
     setMadhab: updateMadhab,
     updateMadhab,
+    prayerOffsets,
+    setPrayerOffsets: updatePrayerOffsets,
+    highLatRule,
+    setHighLatRule: updateHighLatRule,
+    hijriOffset,
+    setHijriOffset: updateHijriOffset,
     currentTime,
     prayers: prayersList,
     prayersList,
     nextPrayer: nextPrayerItem,
     nextPrayerItem,
+    nextPrayerTargetTime,
     timeRemaining: formattedCountdown,
     formattedCountdown,
     countdownSeconds: countdown,
@@ -271,10 +358,11 @@ export function usePrayerTimes() {
     sunnahTimes: {
       midnight: sunnahTimes.middleOfTheNight,
       lastThird: sunnahTimes.lastThirdOfTheNight,
+      duha: sunnahTimes.duha,
       middleOfTheNight: formatTime(sunnahTimes.middleOfTheNight),
       lastThirdOfTheNight: formatTime(sunnahTimes.lastThirdOfTheNight),
     },
-    hijriDateString: formatHijriDate(currentTime),
+    hijriDateString: formatHijriDate(currentTime, hijriOffset),
     refreshLocation: detectLocation,
     detectLocation,
     isLocating: isDetectingLocation,

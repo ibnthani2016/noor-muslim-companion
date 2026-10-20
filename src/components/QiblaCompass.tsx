@@ -2,8 +2,20 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { LocationCoords } from "@/types";
-import { calculateQiblaBearing, calculateDistanceToKaaba, getDirectionName } from "@/utils/qibla";
-import { Compass, RotateCw, CheckCircle2, AlertTriangle, Sliders, Smartphone } from "lucide-react";
+import {
+  calculateQiblaBearing,
+  calculateDistanceToKaaba,
+  getDirectionName,
+} from "@/utils/qibla";
+import {
+  Compass,
+  RotateCw,
+  CheckCircle2,
+  Sliders,
+  Smartphone,
+  X,
+  MapPin,
+} from "lucide-react";
 
 interface QiblaCompassProps {
   location: LocationCoords;
@@ -26,8 +38,7 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
   const currentHeading = useManualMode ? manualOffset : deviceHeading;
 
   // The needle rotation relative to user phone's top
-  // If user phone is facing currentHeading, Kaaba is at (qiblaAngle - currentHeading)
-  const relativeAngle = ((qiblaAngle - currentHeading + 360) % 360);
+  const relativeAngle = (qiblaAngle - currentHeading + 360) % 360;
 
   // Is phone aligned within ±3 degrees of Kaaba
   const isAligned = relativeAngle <= 3 || relativeAngle >= 357;
@@ -37,7 +48,7 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
     if (isAligned && typeof window !== "undefined" && "vibrate" in navigator) {
       try {
         navigator.vibrate(40);
-      } catch (e) {
+      } catch {
         // Ignored on non-supporting devices
       }
     }
@@ -48,8 +59,12 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
     let heading = 0;
 
     // iOS WebKit compass heading
-    if ("webkitCompassHeading" in event && typeof (event as any).webkitCompassHeading === "number") {
-      heading = (event as any).webkitCompassHeading;
+    if (
+      "webkitCompassHeading" in event &&
+      typeof (event as unknown as { webkitCompassHeading: number }).webkitCompassHeading ===
+        "number"
+    ) {
+      heading = (event as unknown as { webkitCompassHeading: number }).webkitCompassHeading;
       setHasSensor(true);
     }
     // Android Chrome absolute orientation
@@ -62,12 +77,12 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
   }, []);
 
   const requestOrientationPermission = async () => {
-    if (
-      typeof window !== "undefined" &&
-      typeof (DeviceOrientationEvent as any)?.requestPermission === "function"
-    ) {
+    const devEvent = DeviceOrientationEvent as unknown as {
+      requestPermission?: () => Promise<string>;
+    };
+    if (typeof window !== "undefined" && typeof devEvent?.requestPermission === "function") {
       try {
-        const response = await (DeviceOrientationEvent as any).requestPermission();
+        const response = await devEvent.requestPermission();
         if (response === "granted") {
           setPermissionState("granted");
           window.addEventListener("deviceorientation", handleOrientation, true);
@@ -79,16 +94,17 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
         setPermissionState("denied");
       }
     } else {
-      // Standard Android / Desktop listener
       window.addEventListener("deviceorientation", handleOrientation, true);
       setPermissionState("granted");
     }
   };
 
   useEffect(() => {
+    const devEvent = DeviceOrientationEvent as unknown as {
+      requestPermission?: () => Promise<string>;
+    };
     if (typeof window !== "undefined") {
-      // Auto attach if permission not strictly required (Android / Chrome)
-      if (typeof (DeviceOrientationEvent as any)?.requestPermission !== "function") {
+      if (typeof devEvent?.requestPermission !== "function") {
         window.addEventListener("deviceorientation", handleOrientation, true);
       }
     }
@@ -113,17 +129,26 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
         <div className="flex items-center gap-3">
           <div
             className={`p-2.5 rounded-xl ${
-              isAligned ? "bg-emerald-500/20 text-emerald-300 animate-pulse" : "bg-slate-800 text-slate-400"
+              isAligned
+                ? "bg-emerald-500/20 text-emerald-300 animate-pulse"
+                : "bg-slate-800 text-slate-400"
             }`}
           >
-            {isAligned ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <Compass className="w-5 h-5 text-teal-400" />}
+            {isAligned ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            ) : (
+              <Compass className="w-5 h-5 text-teal-400" />
+            )}
           </div>
           <div>
             <h3 className="font-bold text-sm text-white">
-              {isAligned ? "Aligned with Kaaba! مواجه للكعبة" : `Rotate Phone toward ${qiblaAngle.toFixed(0)}° ${directionName}`}
+              {isAligned
+                ? "Aligned with Kaaba! مواجه للكعبة"
+                : `Rotate Phone toward ${qiblaAngle.toFixed(0)}° ${directionName}`}
             </h3>
             <p className="text-xs text-slate-400">
-              Qibla Bearing: <strong className="text-emerald-400">{qiblaAngle.toFixed(1)}°</strong> from True North
+              Qibla Bearing:{" "}
+              <strong className="text-emerald-400">{qiblaAngle.toFixed(1)}°</strong> from True North
             </p>
           </div>
         </div>
@@ -179,7 +204,7 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
             >
               {/* Kaaba Marker */}
               <div className="mt-1 flex flex-col items-center">
-                <div className="w-7 h-7 bg-amber-400 text-slate-950 font-bold rounded-lg flex items-center justify-center shadow-lg shadow-amber-400/40 text-xs border border-amber-200 animate-bounce">
+                <div className="w-7 h-7 bg-amber-400 text-slate-950 font-bold rounded-lg flex items-center justify-center shadow-lg shadow-amber-400/40 text-xs border border-amber-200">
                   🕋
                 </div>
                 <span className="text-[9px] font-bold text-amber-300 bg-slate-950/80 px-1 rounded mt-0.5">
@@ -206,25 +231,35 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
 
       {/* Sensor / Simulator Controls */}
       <div className="rounded-2xl bg-slate-900/70 border border-slate-800 p-4 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Smartphone className="w-4 h-4 text-emerald-400" />
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-              Orientation Sensor
+              Orientation Sensor & Calibration
             </h4>
           </div>
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setIsCalibrating(true)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-semibold transition"
+            >
+              <RotateCw className="w-3.5 h-3.5 text-amber-400" />
+              <span>Calibrate (Figure-8)</span>
+            </button>
+
+            <button
               onClick={() => setUseManualMode(!useManualMode)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
             >
               <Sliders className="w-3.5 h-3.5 text-teal-400" />
-              <span>{useManualMode ? "Switch to Sensor" : "Simulate / Manual"}</span>
+              <span>{useManualMode ? "Use Live Sensor" : "Simulate / Manual"}</span>
             </button>
 
             {typeof window !== "undefined" &&
-              typeof (DeviceOrientationEvent as any)?.requestPermission === "function" &&
+              typeof (
+                DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
+              )?.requestPermission === "function" &&
               permissionState !== "granted" && (
                 <button
                   onClick={requestOrientationPermission}
@@ -262,7 +297,9 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
             <span>
               Status:{" "}
               <strong className={hasSensor ? "text-emerald-400" : "text-amber-400"}>
-                {hasSensor ? "Active Sensor Feed" : "No device sensor detected (use manual mode)"}
+                {hasSensor
+                  ? "Active Sensor Feed"
+                  : "No hardware magnetometer detected (use Simulate / Manual slider)"}
               </strong>
             </span>
             <span className="font-mono">Current Heading: {currentHeading}°</span>
@@ -270,15 +307,55 @@ export const QiblaCompass: React.FC<QiblaCompassProps> = ({ location }) => {
         )}
       </div>
 
-      {/* How to use Guide */}
-      <div className="rounded-2xl bg-slate-900/40 border border-slate-800/60 p-4 text-xs text-slate-400 space-y-1">
-        <p className="font-semibold text-slate-300">How to get accurate Qibla:</p>
-        <ul className="list-disc list-inside space-y-0.5 text-slate-400">
-          <li>Hold phone flat like a real compass.</li>
-          <li>Keep away from magnetic objects, laptops, or metal cases.</li>
-          <li>Rotate in a figure-8 motion if calibration is required.</li>
-        </ul>
+      {/* Geodetic Great-Circle Reference Card */}
+      <div className="rounded-2xl bg-slate-900/40 border border-slate-800/60 p-4 text-xs text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="space-y-1">
+          <p className="font-semibold text-slate-200 flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+            <span>
+              Great-Circle Vector from {location.city}, {location.country}
+            </span>
+          </p>
+          <p className="text-slate-400">
+            Face <strong className="text-emerald-300">{qiblaAngle.toFixed(1)}° ({directionName})</strong>{" "}
+            clockwise from True North toward Al-Masjid al-Haram (21.4225°N, 39.8262°E).
+          </p>
+        </div>
       </div>
+
+      {/* Figure-8 Calibration Modal */}
+      {isCalibrating && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-base text-white flex items-center gap-2">
+                <RotateCw className="w-4 h-4 text-amber-400" />
+                <span>Compass Figure-8 Calibration</span>
+              </h3>
+              <button
+                onClick={() => setIsCalibrating(false)}
+                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center text-center space-y-3">
+              <div className="text-4xl font-extrabold text-emerald-400 font-mono">∞</div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Wave and tilt your device slowly in a <strong>Figure-8 (∞) motion</strong> 3 to 4 times away from metal tables, laptop magnets, or magnetic phone cases.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setIsCalibrating(false)}
+              className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition"
+            >
+              Done Calibrating
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

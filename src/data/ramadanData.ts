@@ -1,0 +1,85 @@
+import { RamadanDua } from "@/types";
+
+export const RAMADAN_DUAS: RamadanDua[] = [
+  {
+    id: "iftar_primary",
+    category: "iftar",
+    title: "Dua Upon Breaking Fast (Authentic Sunnah)",
+    arabic: "ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ",
+    transliteration: "Dhahaba adh-dhama'u wabtallatil-'urooq, wa thabatal-ajru in sha Allah",
+    translation: "The thirst has gone, the veins are moistened, and the reward is confirmed, if Allah wills.",
+    reference: "Abu Dawud (Book 13, Hadith 2350)",
+  },
+  {
+    id: "iftar_traditional",
+    category: "iftar",
+    title: "Dua for Iftar (Common Traditional)",
+    arabic: "اللَّهُمَّ إِنِّي لَكَ صُمْتُ وَعَلَىٰ رِزْقِكَ أَفْطَرْتُ",
+    transliteration: "Allahumma inni laka sumtu wa 'ala rizqika aftart",
+    translation: "O Allah, I fasted for You and with Your provision I break my fast.",
+    reference: "Abu Dawud (Hadith 2358)",
+  },
+  {
+    id: "suhoor_intention",
+    category: "suhoor",
+    title: "Intention for Fasting (Niyyah)",
+    arabic: "وَبِصَوْمِ غَدٍ نَّوَيْتُ مِنْ شَهْرِ رَمَضَانَ",
+    transliteration: "Wa bisawmi ghadin nawaytu min shahri ramadan",
+    translation: "I intend to fast tomorrow for the month of Ramadan for the sake of Allah.",
+    reference: "Fasting Niyyah (Declared in the heart)",
+  },
+  {
+    id: "laylatul_qadr",
+    category: "laylatul_qadr",
+    title: "Dua for Laylatul Qadr (The Night of Decree)",
+    arabic: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",
+    transliteration: "Allahumma innaka 'afuwwun tuhibbul-'afwa fa'fu 'anni",
+    translation: "O Allah, You are Most Forgiving, and You love forgiveness; so forgive me.",
+    reference: "Jami' at-Tirmidhi (Hadith 3513)",
+  },
+  {
+    id: "forgiveness_sayyid",
+    category: "general",
+    title: "Master Supplication for Forgiveness (Sayyidul Istighfar)",
+    arabic: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَىٰ عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ",
+    transliteration: "Allahumma Anta Rabbi la ilaha illa Ant, khalaqtani wa ana 'abduk, wa ana 'ala 'ahdika wa wa'dika mastata't",
+    translation: "O Allah, You are my Lord; there is no god but You. You created me and I am Your servant, and I hold to Your covenant and promise as much as I am able.",
+    reference: "Sahih al-Bukhari (Hadith 6306)",
+  },
+  {
+    id: "guest_iftar",
+    category: "iftar",
+    title: "Dua After Breaking Fast at Someone's House",
+    arabic: "أَفْطَرَ عِنْدَكُمُ الصَّائِمُونَ، وَأَكَلَ طَعَامَكُمُ الأَبْرَارُ، وَصَلَّتْ عَلَيْكُمُ الْمَلائِكَةُ",
+    transliteration: "Aftara 'indakumus-saa'imoon, wa akala ta'aamakumul-abraar, wa sallat 'alaykumul-malaa'ikah",
+    translation: "May the fasting break their fast with you, may the righteous eat your food, and may the angels send blessings upon you.",
+    reference: "Sunan Abi Dawud (Hadith 3854)",
+  },
+];
+
+export const RAMADAN_ASHRA_INFO = {
+  first: {
+    number: 1,
+    title: "First 10 Days: Mercy (أيام الرحمة)",
+    days: "Days 1 – 10",
+    dua: "رَبِّ اغْفِرْ وَارْحَمْ وَأَنْتَ خَيْرُ الرَّاحِمِينَ",
+    transliteration: "Rabbi-ghfir war-ham wa Anta khayrur-raahimeen",
+    translation: "O my Lord! Forgive and have mercy, for You are the Best of those who show mercy.",
+  },
+  second: {
+    number: 2,
+    title: "Second 10 Days: Forgiveness (أيام المغفرة)",
+    days: "Days 11 – 20",
+    dua: "أَسْتَغْفِرُ اللَّهَ رَبِّي مِنْ كُلِّ ذَنْبٍ وَأَتُوبُ إِلَيْهِ",
+    transliteration: "Astaghfirullaha Rabbi min kulli dhanbin wa atoobu ilayh",
+    translation: "I seek forgiveness from Allah, my Lord, from every sin and I repent unto Him.",
+  },
+  third: {
+    number: 3,
+    title: "Last 10 Days: Protection from Hellfire (العتق من النار)",
+    days: "Days 21 – 30",
+    dua: "اللَّهُمَّ أَجِرْنِي مِنَ النَّارِ",
+    transliteration: "Allahumma ajirni minan-naar",
+    translation: "O Allah, save me from the fire of Hell.",
+  },
+};

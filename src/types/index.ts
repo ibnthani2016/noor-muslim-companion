@@ -84,3 +84,103 @@ export interface ArabicFontOption {
   description: string;
 }
 
+// Ramadan & Fasting Types
+export interface RamadanDua {
+  id: string;
+  category: "iftar" | "suhoor" | "general" | "laylatul_qadr";
+  title: string;
+  arabic: string;
+  transliteration: string;
+  translation: string;
+  reference: string;
+}
+
+export interface FastingDayLog {
+  date: string; // YYYY-MM-DD
+  fasted: boolean;
+  taraweehCompleted?: boolean;
+  notes?: string;
+}
+
+// Quran Khatmah & Hifz Looper Types
+export interface KhatmahProgress {
+  targetDays: number;
+  completedJuz: number[]; // 1 to 30
+  startDate: string;
+  completedSurahs: number[]; // 1 to 114
+}
+
+export interface HifzLooperSettings {
+  enabled: boolean;
+  repeatCount: number; // 1, 3, 5, 10, or 99 for infinite
+  pauseSeconds: number; // delay between loops
+  currentLoop: number;
+}
+
+// Card Studio Types
+export type CardPalette = "emerald" | "gold" | "indigo" | "crimson" | "sand";
+
+export interface CardTemplate {
+  id: string;
+  category: "ramadan" | "ayah" | "dhikr" | "jummah" | "meme";
+  title: string;
+  arabicText: string;
+  englishText: string;
+  attribution: string;
+  palette: CardPalette;
+}
+
+// Media Hub Types
+export type MediaCategory = "all" | "ramadan" | "tafseer" | "lectures" | "nasheeds" | "family";
+
+export interface MediaItem {
+  id: string;
+  title: string;
+  speakerOrArtist: string;
+  category: MediaCategory;
+  duration: string;
+  youtubeId?: string;
+  audioUrl?: string;
+  thumbnailUrl: string;
+  description: string;
+  isFeatured?: boolean;
+}
+
+// App Theme & Prayer Fine-Tuning Types
+export type AppTheme = "emerald-dark" | "oled-black" | "sepia";
+
+export type HighLatitudeRuleKey = "MiddleOfTheNight" | "SeventhOfTheNight" | "TwilightAngle";
+
+export interface PrayerOffsets {
+  fajr: number;
+  sunrise: number;
+  dhuhr: number;
+  asr: number;
+  maghrib: number;
+  isha: number;
+}
+
+export type SalahStatus = "unlogged" | "on-time" | "jamaah" | "late" | "qaza";
+
+export interface DailySalahRecord {
+  fajr: SalahStatus;
+  dhuhr: SalahStatus;
+  asr: SalahStatus;
+  maghrib: SalahStatus;
+  isha: SalahStatus;
+  excused?: boolean;
+}
+
+// Quran Reading & Bookmarking Types
+export type QuranReadingMode = "cards" | "mushaf";
+
+export interface QuranBookmark {
+  surahNumber: number;
+  surahName: string;
+  surahArabic?: string;
+  ayahNumber: number;
+  textPreview?: string;
+  timestamp: number;
+}
+
+

@@ -523,3 +523,18 @@ Previously, the audio player began reciting directly at Ayah 1, omitting the ope
 
 
 
+
+---
+
+### [DEC-019] 3-Phase Architectural, Worship Habit & Quran Mushaf/Hifdh Upgrade
+
+- **Date:** 2026-10-16
+- **Status:** Accepted & Implemented
+- **Author:** Noor Companion Engineering Team
+- **Tags:** #architecture #performance #salah-tracker #quran #mushaf #hifdh #tafsir #adhkar #hijri-calendar #themes #zakat #accessibility
+
+#### Summary
+Implemented all 3 phases from the competitive & architectural audit (`noor_audit_and_benchmark.md`):
+1. **Phase 1:** Isolated 1Hz countdown to `PrayerTimes.tsx`, lazy-loaded tabs via `next/dynamic`, promoted `Adhkar` & `Qibla` to the 5-tab mobile bottom bar, restored viewport zoom & text selection, added Pillars-style Daily Salah Habit Tracker + Qaza counter + Excused streak protection, fixed Imsak (-10m) display in `FastingTracker.tsx`, wired `isAudioEnabled` + Web Notification timers, and upgraded `AdhkarTasbih.tsx` with daily `YYYY-MM-DD` auto-reset, streak counter, Before Sleep category, auto-scroll to next Dhikr, and persistent per-preset/lifetime Tasbih counts.
+2. **Phase 2:** Cached all fetched Surah texts in `localStorage` for 100% offline reading, added Mushaf Flowing Page View toggle (`﴿١﴾`), Hifdh Blur Self-Test mode, Ayah-Range Looper, exact `Surah:Ayah` Continue Reading banner, multi-ayah bookmarks, Quick-Access Surah pills, Juz 1–30 filter, 1-tap Copy Ayah, expandable Tafsir Al-Muyassar drawer, interactive Khatmah target days (10/15/30/60d), and Blob URL memory cleanup.
+3. **Phase 3:** Built an interactive 7-column monthly Hijri/Gregorian calendar grid with White Days & Moon-Sighting offset (`-2` to `+2` days), added Multi-Theme Engine (`Emerald Dark`, `OLED Pitch Black`, `Warm Sepia`), Per-Prayer Minute Offsets (`±30m`), and High-Latitude Rules in `SettingsModal.tsx`, upgraded `ZakatCalculator.tsx` with persistence, currency-aware metal prices, and Fitrana/Fidyah calculator, added Figure-8 calibration modal to `QiblaCompass.tsx`, and added Arabic calligraphy selector + auto-fit vertical scaling to `CardStudio.tsx`.
